@@ -1,0 +1,40 @@
+.loginPage {
+  background-color: rgba(255, 255, 255, 0.03);
+  width: 420px;
+  max-width: 420px;
+  border-radius: 12px;
+  margin: 60px auto;
+  padding: 20px;
+  .container {
+    .row {
+      flex-direction: column;
+      gap: 20px;
+
+      .loginForm {
+        font-size: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        justify-content: center;
+        input,
+        button {
+          border-radius: 7px;
+          outline: none;
+          border: none;
+          padding: 8px;
+        }
+        button {
+          width: 25%;
+          font-size: 18px;
+          &:hover {
+            opacity: 0.7;
+            cursor: pointer;
+          }
+        }
+        .error {
+          color: red;
+        }
+      }
+    }
+  }
+}

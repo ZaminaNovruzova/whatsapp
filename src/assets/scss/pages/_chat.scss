@@ -1,0 +1,34 @@
+.chatPage {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  .header {
+    font-size: 20px;
+    position: sticky;
+    z-index: 1000;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px;
+    .leftSide {
+      display: flex;
+      gap: 20px;
+      .goToAllMessages {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .profileDetails {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+    }
+    .rightSide {
+      display: flex;
+      gap: 10px;
+    }
+  }
+}
