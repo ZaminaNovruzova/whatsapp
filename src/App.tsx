@@ -1,8 +1,8 @@
 
-import Messages from "./Modules/Chat/View/Chat";
+import Chat from "./Modules/Chat/View/Chat";
 
 const App = () => {
-  return <Messages />;
+  return <Chat/>
 };
 
 export default App;

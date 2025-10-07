@@ -1,5 +1,8 @@
 @use "./base";
 
+//components
+@use "./components/message";
+@use "./components/messageList";
 //pages
 @use "./pages/login";
 @use "./pages/chat";

@@ -3,6 +3,8 @@
   flex-direction: column;
   height: 100vh;
   position: relative;
+  background: linear-gradient(180deg, #071122, #041224);
+  padding: 10px 20px;
   .header {
     font-size: 20px;
     position: sticky;
@@ -11,7 +13,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 20px;
     .leftSide {
       display: flex;
       gap: 20px;
@@ -24,11 +25,57 @@
         display: flex;
         gap: 10px;
         align-items: center;
+        .userProfilePhoto {
+          width: 40px;
+          height: 40px;
+          border-radius: 100%;
+          overflow: hidden;
+        }
       }
     }
     .rightSide {
       display: flex;
       gap: 10px;
+      align-items: center;
+      button {
+        border: none;
+        outline: none;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    }
+  }
+  main {
+    flex: 1;
+    padding: 14px;
+    overflow: auto;
+  }
+  .sendMessages {
+    display: flex;
+    gap: 10px;
+    font-size: 25px;
+    align-items: center;
+    padding-bottom: 15px;
+    button {
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background-color: transparent;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .text {
+      outline: none;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.02);
+      color: inherit;
+      width: 100%;
+      padding: 8px 10px;
     }
   }
 }
