@@ -37,6 +37,19 @@ const Message = ({ message, mine }: { message: IMessage; mine: boolean }) => {
             </audio>
           </div>
         )}
+        {message.file && (
+          <a
+            href={message.file.url}
+            download={message.file.name}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {message.file.name}
+          </a>
+        )}
+        {message.image && (
+          <img src={message.image} alt="Sent photo" className="sentImage" />
+        )}
         <p className="time">{time}</p>
       </div>
     </div>

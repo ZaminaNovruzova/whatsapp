@@ -3,7 +3,7 @@ import { CiCamera, CiVideoOn } from "react-icons/ci";
 import { GrMicrophone } from "react-icons/gr";
 import { IoCallOutline } from "react-icons/io5";
 import Login from "../../Auth/View/Login";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { IMessage, UserId } from "../Models/messageTypes";
 import { uid } from "../../../utils/randomID";
 import {
@@ -15,6 +15,7 @@ import {
 import MessagesList from "../../../components/MessagesList";
 import { users } from "../../../db/users";
 import { useAudioRecorder } from "../../../customHooks/useAudioRecorder";
+import { useCameraCapture } from "../../../customHooks/useCameraCapture";
 
 const Chat = () => {
   //*login olan user
@@ -30,12 +31,20 @@ const Chat = () => {
 
   const [text, setText] = useState("");
   const [messages, setMessages] = useState<IMessage[]>(() => loadMessages());
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { start, stop, isRecording } = useAudioRecorder(
     async (dataUrl, mimeType) => {
       sendAudioMessage(
         dataUrl,
         `Recording.${mimeType?.split("/")[1] ?? "webm"}`
       );
+    }
+  );
+
+  const { videoRef, startCamera, takePhoto, stopCamera } = useCameraCapture(
+    (dataUrl) => {
+      sendPhotoMessage(dataUrl);
     }
   );
 
@@ -128,6 +137,53 @@ const Chat = () => {
       setText("");
     }
   }
+  function sendFileMessage(dataUrl: string, name: string, type: string) {
+    if (!currentUser || !otherUser) return;
+
+    const msg: IMessage = {
+      id: uid(),
+      from: currentUser,
+      to: otherUser,
+      createdAt: new Date().toISOString(),
+      file: {
+        url: dataUrl,
+        name,
+        type,
+      },
+    };
+
+    setMessages((s) => [...s, msg]);
+  }
+
+  function sendPhotoMessage(photoDataUrl: string) {
+    if (currentUser && otherUser) {
+      const msg: IMessage = {
+        id: uid(),
+        from: currentUser,
+        to: otherUser,
+        text: undefined,
+        image: photoDataUrl,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, msg]);
+    }
+  }
+
+  function clearAll() {
+    if (!confirm("Clear all messages?")) return;
+    setMessages([]);
+  }
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      sendFileMessage(dataUrl, file.name, file.type);
+    };
+    reader.readAsDataURL(file);
+  }
 
   const otherUserObj = users.find((u) => u.id === otherUser) ?? null;
 
@@ -191,6 +247,7 @@ const Chat = () => {
         <div className="rightSide">
           <CiVideoOn />
           <IoCallOutline />
+          <button onClick={clearAll}>Clear All</button>
           <button onClick={logout}>Logout</button>
         </div>
       </header>
@@ -204,7 +261,13 @@ const Chat = () => {
         </section>
       </main>
       <footer className="sendMessages">
-        <div>+</div>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
+        <button onClick={() => fileInputRef.current?.click()}>+</button>
         <input
           type="text"
           className="text"
@@ -219,7 +282,16 @@ const Chat = () => {
           }}
         />
         <button onClick={send}>Send</button>
-        <CiCamera />
+        <div>
+          {videoRef && (
+            <div className="cameraPreview">
+              <video ref={videoRef} autoPlay playsInline />
+              <button onClick={takePhoto}>📸 Çək</button>
+              <button onClick={stopCamera}>❌ Bağla</button>
+            </div>
+          )}
+        </div>
+        <CiCamera onClick={startCamera} className="camera" />
         {!isRecording ? (
           <GrMicrophone className="audio" onClick={start} />
         ) : (

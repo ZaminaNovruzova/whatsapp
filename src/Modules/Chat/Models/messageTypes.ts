@@ -1,10 +1,16 @@
-export type UserId =string
+export type UserId = string;
 export interface IMessage {
   id: string;
   from: UserId;
   to: UserId;
   text?: string;
-  audio?: string; // data:audio/...;base64,... (optional)
-  audioName?: string; // original filename or "Recording"
+  audio?: string;
+  audioName?: string;
   createdAt: string;
+  file?: {
+    url: string;
+    name: string;
+    type: string;
+  };
+  image?: string;
 }
