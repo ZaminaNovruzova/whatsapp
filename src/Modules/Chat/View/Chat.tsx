@@ -1,17 +1,19 @@
 import { CiCamera, CiVideoOn } from "react-icons/ci";
-import { FaArrowLeft } from "react-icons/fa";
+// import { FaArrowLeft } from "react-icons/fa";
 import { GrMicrophone } from "react-icons/gr";
 import { IoCallOutline } from "react-icons/io5";
 import Login from "../../Auth/View/Login";
 import { useEffect, useMemo, useState } from "react";
-import type { IMessage } from "../Models/messageTypes";
+import type { IMessage, UserId } from "../Models/messageTypes";
 import { uid } from "../../../utils/randomID";
 import {
+  getConversationMessages,
   loadMessages,
   LS_KEY,
   saveMessages,
 } from "../../../utils/localStorage";
 import MessagesList from "../../../components/MessagesList";
+import { users } from "../../../db/users";
 
 const Chat = () => {
   //*login olan user
@@ -19,8 +21,23 @@ const Chat = () => {
     localStorage.getItem("currentUser")
   );
 
+  const [otherUser, setOtherUser] = useState<UserId | null>(() => {
+    const cu = localStorage.getItem("currentUser");
+    if (!cu) return null;
+    return (localStorage.getItem(`otherUser_${cu}`) as UserId) || null;
+  });
+
   const [text, setText] = useState("");
   const [messages, setMessages] = useState<IMessage[]>(() => loadMessages());
+
+  useEffect(() => {
+    if (!currentUser) {
+      setOtherUser(null);
+      return;
+    }
+    const saved = localStorage.getItem(`otherUser_${currentUser}`);
+    setOtherUser((saved as UserId) || null);
+  }, [currentUser]);
 
   useEffect(() => {
     saveMessages(messages);
@@ -40,12 +57,12 @@ const Chat = () => {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const sorted = useMemo(
-    () => [...messages].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
-    [messages]
-  );
+  const conversationMessages = useMemo(() => {
+    return getConversationMessages(messages, currentUser, otherUser);
+  }, [messages, currentUser, otherUser]);
 
   function handleLogin(id: string) {
+    localStorage.setItem("currentUser", id);
     setCurrentUser(id);
   }
 
@@ -54,44 +71,95 @@ const Chat = () => {
     setCurrentUser(null);
   }
 
+  function handleSelectOther(value: string) {
+    const val = value || null;
+    setOtherUser(val);
+    if (currentUser) {
+      if (val) {
+        localStorage.setItem(`otherUser_${currentUser}`, val);
+      } else {
+        localStorage.removeItem(`otherUser_${currentUser}`);
+      }
+    }
+  }
+
   if (!currentUser) {
     return <Login onLogin={handleLogin} />;
   }
 
-  //*current user alice dirse other  bob kimi teyin etsin 
-  const me = currentUser as "alice" | "bob"; 
-  const other = me === "alice" ? "bob" : "alice";
-
   function send() {
     const trimmed = text.trim();
     if (!trimmed) return;
-    const msg: IMessage = {
-      id: uid(),
-      from: me,
-      to: other,
-      text: trimmed,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((s) => [...s, msg]);
-    setText("");
+    if (currentUser && otherUser) {
+      const msg: IMessage = {
+        id: uid(),
+        from: currentUser,
+        to: otherUser,
+        text: trimmed,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((s) => [...s, msg]);
+      setText("");
+    }
+  }
+
+  const otherUserObj = users.find((u) => u.id === otherUser) ?? null;
+
+  if (!otherUserObj) {
+    return (
+      <div className="chatPage">
+        <header className="header">
+          <div className="leftSide">
+            <div className="chat-select">
+              <span>Chat with: </span>
+              <select
+                value={otherUser ?? ""}
+                onChange={(e) => handleSelectOther(e.target.value)}
+              >
+                <option value="">Select user...</option>
+                {users
+                  .filter((u) => u.id !== currentUser)
+                  .map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+          <div className="rightSide">
+            <button onClick={logout}>Logout</button>
+          </div>
+        </header>
+      </div>
+    );
   }
 
   return (
     <div className="chatPage">
       <header className="header">
         <div className="leftSide">
-          <div className="goToAllMessages">
-            {/* <FaArrowLeft />
-            <span></span> */}
+          <div className="chat-select">
+            <span>Chat with: </span>
+            <select
+              value={otherUser ?? ""}
+              onChange={(e) => handleSelectOther(e.target.value)}
+            >
+              <option value="">Select user...</option>
+              {users
+                .filter((u) => u.id !== currentUser)
+                .map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+            </select>
           </div>
           <div className="profileDetails">
             <div className="userProfilePhoto">
-              {/* <img
-                src="src/assets/images/fotor-ai-20241209113950.jpg"
-                alt="photo"
-              /> */}
+              <img src={otherUserObj?.image} alt="photo" />
             </div>
-            <h4 className="userProfileName">{other}</h4>
+            <h4 className="userProfileName">{otherUserObj?.name}</h4>
           </div>
         </div>
         <div className="rightSide">
@@ -104,7 +172,7 @@ const Chat = () => {
         <section className="messages">
           <div className="container">
             <div className="row">
-              <MessagesList messages={sorted} me={me} />
+              <MessagesList messages={conversationMessages} me={currentUser} />
             </div>
           </div>
         </section>

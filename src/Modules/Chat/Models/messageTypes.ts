@@ -1,4 +1,4 @@
-export type UserId = "alice" | "bob";
+export type UserId =string
 export interface IMessage {
   id: string;
   from: UserId;
