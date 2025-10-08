@@ -29,7 +29,14 @@ const Message = ({ message, mine }: { message: IMessage; mine: boolean }) => {
         </p>
       )}
       <div className="messageRow" style={{ background: avatarColor }}>
-        <p className="message">{message.text}</p>
+        {message.text && <p className="text">{message.text}</p>}
+        {message.audio && (
+          <div style={{ margin: 4 }}>
+            <audio controls src={message.audio} preload="none">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        )}
         <p className="time">{time}</p>
       </div>
     </div>

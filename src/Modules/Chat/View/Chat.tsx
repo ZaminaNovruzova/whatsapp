@@ -14,6 +14,7 @@ import {
 } from "../../../utils/localStorage";
 import MessagesList from "../../../components/MessagesList";
 import { users } from "../../../db/users";
+import { useAudioRecorder } from "../../../customHooks/useAudioRecorder";
 
 const Chat = () => {
   //*login olan user
@@ -29,6 +30,14 @@ const Chat = () => {
 
   const [text, setText] = useState("");
   const [messages, setMessages] = useState<IMessage[]>(() => loadMessages());
+  const { start, stop, isRecording } = useAudioRecorder(
+    async (dataUrl, mimeType) => {
+      sendAudioMessage(
+        dataUrl,
+        `Recording.${mimeType?.split("/")[1] ?? "webm"}`
+      );
+    }
+  );
 
   useEffect(() => {
     if (!currentUser) {
@@ -96,6 +105,23 @@ const Chat = () => {
         from: currentUser,
         to: otherUser,
         text: trimmed,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((s) => [...s, msg]);
+      setText("");
+    }
+  }
+
+  function sendAudioMessage(audioDataUrl?: string, audioName?: string) {
+    const trimmed = text.trim();
+    if (currentUser && otherUser) {
+      const msg: IMessage = {
+        id: uid(),
+        from: currentUser,
+        to: otherUser,
+        text: trimmed || undefined,
+        audio: audioDataUrl,
+        audioName: audioName,
         createdAt: new Date().toISOString(),
       };
       setMessages((s) => [...s, msg]);
@@ -194,7 +220,15 @@ const Chat = () => {
         />
         <button onClick={send}>Send</button>
         <CiCamera />
-        <GrMicrophone />
+        {!isRecording ? (
+          <GrMicrophone className="audio" onClick={start} />
+        ) : (
+          <GrMicrophone
+            className="audio"
+            onClick={stop}
+            style={{ stroke: "red", transform: "scale(1.05)" }}
+          />
+        )}
       </footer>
     </div>
   );
