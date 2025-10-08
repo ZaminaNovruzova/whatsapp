@@ -1,20 +1,11 @@
 
-2. databaza 
-3. chat sehifesi 
-4.  mesaj gonderme ozelliyi
-
+2. databaza
 6.+iconuna basanda balaca modal vindow acilsinz
 
 Additionals: optional
 theme:dark, light
 register
-
-
-
-7 oktyabr tasklari 
-
-1. login submit edende usere uygun chata daxil ol
-2. message componentini ve chat bolmesini tam hazir et
+notfound route hissesini duzelt
 
 8 oktyabr tasklari
 
@@ -26,5 +17,6 @@ register
 -------------------------------------------------------
 Installed:
 npm i sass
-
+npm i react-router-dom
+npm i react-icons
 

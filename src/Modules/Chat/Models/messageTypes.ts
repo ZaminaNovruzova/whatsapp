@@ -1,5 +1,5 @@
 export type UserId = "alice" | "bob";
-export interface Message {
+export interface IMessage {
   id: string;
   from: UserId;
   to: UserId;

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { users } from "../../../db/users";
 
 const Login = ({ onLogin }: { onLogin: (id: string) => void }) => {
+  
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+
   function handleSubmitForm(e: React.FormEvent) {
     e.preventDefault();
     const found = users.find(

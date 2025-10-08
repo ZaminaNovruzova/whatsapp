@@ -1,19 +1,20 @@
-import type {Message}  from "../Modules/Chat/Models/messageTypes";
-import MessageRow from "./Message";
-
+import type { IMessage } from "../Modules/Chat/Models/messageTypes";
+import Message from "./Message";
 
 const MessagesList = ({
   messages,
   me,
 }: {
-  messages: Message[];
+  messages: IMessage[];
   me: string;
 }) => {
   return (
     <div className="messagesList">
-      <p className="empty">No messages yet — say hi!</p>
+      {messages.length === 0 && (
+        <p className="empty">No messages yet — say hi!</p>
+      )}
       {messages.map((item) => (
-        <MessageRow key={item.id} message={item} mine={item.from === me} />
+        <Message key={item.id} message={item} mine={item.from === me} />
       ))}
     </div>
   );
