@@ -19,13 +19,5 @@ export const pagesList = [
     is_visible: true,
     is_navigation: false,
   },
-//   {
-//     id: "login",
-//     name: "Login",
-//     path: "/",
-//     element: <Login onLogin={console.log("sakan")
-//     } />,
-//     is_visible: true,
-//     is_navigation: false,
-//   },
+
 ];

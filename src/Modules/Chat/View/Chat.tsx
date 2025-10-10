@@ -22,17 +22,10 @@ const Chat = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(() =>
     localStorage.getItem("currentUser")
   );
-
-  const [otherUser, setOtherUser] = useState<UserId | null>(() => {
-    const cu = localStorage.getItem("currentUser");
-    if (!cu) return null;
-    return (localStorage.getItem(`otherUser_${cu}`) as UserId) || null;
-  });
-
+  const [otherUser, setOtherUser] = useState<UserId | null>(null);
   const [text, setText] = useState("");
   const [messages, setMessages] = useState<IMessage[]>(() => loadMessages());
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const { start, stop, isRecording } = useAudioRecorder(
     async (dataUrl, mimeType) => {
       sendAudioMessage(
@@ -41,12 +34,23 @@ const Chat = () => {
       );
     }
   );
+  const {
+    videoRef,
+    startCamera,
+    takePhoto,
+    stopCamera,
+    capturedPhoto,
+    clearCapturedPhoto,
+    isCameraOn,
+  } = useCameraCapture();
 
-  const { videoRef, startCamera, takePhoto, stopCamera } = useCameraCapture(
-    (dataUrl) => {
-      sendPhotoMessage(dataUrl);
-    }
-  );
+  useEffect(() => {
+    saveMessages(messages);
+    localStorage.setItem(
+      "two_user_messages_v1_updated_at",
+      new Date().toISOString()
+    );
+  }, [messages]);
 
   useEffect(() => {
     if (!currentUser) {
@@ -56,14 +60,6 @@ const Chat = () => {
     const saved = localStorage.getItem(`otherUser_${currentUser}`);
     setOtherUser((saved as UserId) || null);
   }, [currentUser]);
-
-  useEffect(() => {
-    saveMessages(messages);
-    localStorage.setItem(
-      "two_user_messages_v1_updated_at",
-      new Date().toISOString()
-    );
-  }, [messages]);
 
   useEffect(() => {
     function onStorage(e: StorageEvent) {
@@ -85,8 +81,14 @@ const Chat = () => {
   }
 
   function logout() {
+    // remove currentUser and also remove the saved otherUser for that user
+    const prev = currentUser;
     localStorage.removeItem("currentUser");
+    if (prev) {
+      localStorage.removeItem(`otherUser_${prev}`);
+    }
     setCurrentUser(null);
+    setOtherUser(null);
   }
 
   function handleSelectOther(value: string) {
@@ -107,18 +109,32 @@ const Chat = () => {
 
   function send() {
     const trimmed = text.trim();
-    if (!trimmed) return;
-    if (currentUser && otherUser) {
+    if (!currentUser || !otherUser) return;
+    if (capturedPhoto) {
       const msg: IMessage = {
         id: uid(),
         from: currentUser,
         to: otherUser,
-        text: trimmed,
+        text: trimmed || undefined, // caption if user typed something
+        image: capturedPhoto,
         createdAt: new Date().toISOString(),
       };
       setMessages((s) => [...s, msg]);
       setText("");
+      clearCapturedPhoto();
+      return;
     }
+    if (!trimmed) return;
+
+    const msg: IMessage = {
+      id: uid(),
+      from: currentUser,
+      to: otherUser,
+      text: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((s) => [...s, msg]);
+    setText("");
   }
 
   function sendAudioMessage(audioDataUrl?: string, audioName?: string) {
@@ -153,20 +169,6 @@ const Chat = () => {
     };
 
     setMessages((s) => [...s, msg]);
-  }
-
-  function sendPhotoMessage(photoDataUrl: string) {
-    if (currentUser && otherUser) {
-      const msg: IMessage = {
-        id: uid(),
-        from: currentUser,
-        to: otherUser,
-        text: undefined,
-        image: photoDataUrl,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, msg]);
-    }
   }
 
   function clearAll() {
@@ -261,6 +263,7 @@ const Chat = () => {
         </section>
       </main>
       <footer className="sendMessages">
+        {/* file gondermek ucun */}
         <input
           type="file"
           ref={fileInputRef}
@@ -281,16 +284,27 @@ const Chat = () => {
             }
           }}
         />
+
+        {/*  xeta var video kayd baglanmir ui goruntu seliqesizdir  */}
+        {videoRef && (
+          <div className="cameraPreview">
+            <video ref={videoRef} autoPlay playsInline />
+            <button onClick={takePhoto}>📸 Çək</button>
+            <button onClick={stopCamera}>❌ Bağla</button>
+          </div>
+        )}
+        {capturedPhoto && (
+          <div className="captured-preview">
+            <img
+              src={capturedPhoto}
+              alt="preview"
+              style={{ width: 80, height: 80, objectFit: "cover" }}
+            />
+            <button onClick={() => clearCapturedPhoto()}>X</button>
+          </div>
+        )}
         <button onClick={send}>Send</button>
-        <div>
-          {videoRef && (
-            <div className="cameraPreview">
-              <video ref={videoRef} autoPlay playsInline />
-              <button onClick={takePhoto}>📸 Çək</button>
-              <button onClick={stopCamera}>❌ Bağla</button>
-            </div>
-          )}
-        </div>
+        <div></div>
         <CiCamera onClick={startCamera} className="camera" />
         {!isRecording ? (
           <GrMicrophone className="audio" onClick={start} />
