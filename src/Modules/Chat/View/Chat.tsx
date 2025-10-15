@@ -41,7 +41,7 @@ const Chat = () => {
     stopCamera,
     capturedPhoto,
     clearCapturedPhoto,
-    isCameraOn,
+  
   } = useCameraCapture();
 
   useEffect(() => {
