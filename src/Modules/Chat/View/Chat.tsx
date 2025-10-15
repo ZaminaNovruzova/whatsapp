@@ -41,6 +41,7 @@ const Chat = () => {
     stopCamera,
     capturedPhoto,
     clearCapturedPhoto,
+  
   } = useCameraCapture();
 
   useEffect(() => {
@@ -71,8 +72,8 @@ const Chat = () => {
   }, []);
 
   const conversationMessages = useMemo(() => {
-    if (currentUser)
-      return getConversationMessages(messages, currentUser, otherUser);
+    // @ts-ignore
+    return getConversationMessages(messages, currentUser, otherUser);
   }, [messages, currentUser, otherUser]);
 
   function handleLogin(id: string) {
